@@ -5,9 +5,11 @@
 #include <QtWidgets/QLineEdit>
 #include <iostream>
 #include <QString>
+#include <exception>
 class Calcu: public QMainWindow
 {
     Q_OBJECT
+    constexpr static const std::initializer_list<char> _sing = {'+', '-', '*', '/'};
     auto type(auto a, auto b, char sing){
         if (sing == '+'){
            return a + b;
@@ -23,12 +25,30 @@ class Calcu: public QMainWindow
         }
     }
     std::string result(std::string& _first,std::string& _second){
-        if (dot){
-            auto result = type(std::stod(_first), std::stod(_second), action);
-            return std::to_string(result);
-        }else{
-            auto result = type(std::stoi(_first), std::stoi(_second), action);
-            return std::to_string(result);
+        try {
+            if ((action == '/' && !dot) &&(std::stoi(_second) == 0 || std::stoi(_first) == 0)){
+                throw 1;
+            }
+            if (dot) {
+                auto result = type(std::stod(_first), std::stod(_second), action);
+                std::cout << 1 << " ";
+                std::cout << std::to_string(result) << std::endl;
+                return std::to_string(result);
+            } else if (dot && std::stoi(_first) % std::stoi(_second) != 0) {
+                auto result = type(std::stod(_first), std::stod(_second), action);
+                std::cout << 2 << " ";
+                std::cout << std::to_string(result) << std::endl;
+                return std::to_string(result);
+            } else {
+                auto result = type(std::stoi(_first), std::stoi(_second), action);
+                std::cout << 3 << " ";
+                std::cout << std::to_string(result) << std::endl;
+                return std::to_string(result);
+            }
+        }
+        catch(int i){
+            std::cerr << "ERROR: division by zero !\n";
+            return "ERROR: division by zero !";
         }
     }
 public:
@@ -145,5 +165,18 @@ public slots:
         dot = false;
         lineEdit->clear();
     };
+    void slot_pressed(){
+        std::string line = lineEdit->text().toStdString();
+        auto checkDot = [](char i){return i == '.';};
+        dot = '.' == *std::find_if(line.begin(), line.end(), checkDot);
+        for (auto i : _sing){
+            if (i == line[line.find(i)]){
+                action = i;
+            }
+        }
+        first = line.substr(0, line.find(*std::find(line.begin(), line.end(), action)));
+        second = line.substr(line.find(*std::find(line.begin(), line.end(), action)) + 1, line.size());
+        slot_result();
+    }
 };
 #endif //MAINCALCU_CALCU_H
