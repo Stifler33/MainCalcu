@@ -31,24 +31,33 @@ class Calcu: public QMainWindow
             }
             if (dot) {
                 auto result = type(std::stod(_first), std::stod(_second), action);
-                std::cout << 1 << " ";
-                std::cout << std::to_string(result) << std::endl;
+                first = std::to_string(result);
                 return std::to_string(result);
             } else if (dot && std::stoi(_first) % std::stoi(_second) != 0) {
                 auto result = type(std::stod(_first), std::stod(_second), action);
-                std::cout << 2 << " ";
-                std::cout << std::to_string(result) << std::endl;
+                first = std::to_string(result);
+                return std::to_string(result);
+            } else if (!dot && action != '/' && std::stoi(_first) % std::stoi(_second) != 0){
+                auto result = type(std::stoi(_first), std::stoi(_second), action);
+                first = std::to_string(result);
+                return std::to_string(result);
+            } else if (!dot && action == '/' && std::stoi(_first) % std::stoi(_second) != 0){
+                auto result = type(std::stod(_first), std::stod(_second), action);
+                first = std::to_string(result);
                 return std::to_string(result);
             } else {
                 auto result = type(std::stoi(_first), std::stoi(_second), action);
-                std::cout << 3 << " ";
-                std::cout << std::to_string(result) << std::endl;
+                first = std::to_string(result);
                 return std::to_string(result);
             }
         }
         catch(int i){
-            std::cerr << "ERROR: division by zero !\n";
+            lineEdit->setStyleSheet(QString::fromUtf8("color:rgb(255, 0, 0)"));
             return "ERROR: division by zero !";
+        }
+        catch(std::invalid_argument& a){
+            lineEdit->setStyleSheet(QString::fromUtf8("color:rgb(255, 0, 0)"));
+            return "ERROR: invalid argument";
         }
     }
 public:
@@ -76,11 +85,8 @@ public slots:
     };
     void slot_result(){
         lineEdit->setText(result(first, second).c_str());
-        //std::cout << first << " " <<second << std::endl;
         action = 0;
-        first.clear();
         second.clear();
-        transition = false;
         dot = false;
     };
     void slot1(){
@@ -158,6 +164,7 @@ public slots:
         transition = true;
     };
     void slot_clear(){
+        lineEdit->setStyleSheet(QString::fromUtf8("color:rgb(0, 170, 0)"));
         action = 0;
         first.clear();
         second.clear();
